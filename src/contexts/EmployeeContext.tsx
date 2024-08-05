@@ -45,7 +45,12 @@ const RESOURCE = 'employees';
 export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
   children
 }) => {
-  const [query, setQuery] = useState<EmployeeQuery>({ limit: 10, page: 1 , sortBy: "id" , sortOrder: "DESC" });
+  const [query, setQuery] = useState<EmployeeQuery>({
+    limit: 10,
+    page: 1,
+    sortBy: 'id',
+    sortOrder: 'desc'
+  });
   const [employeeList, setEmployeeList] = useState<Employee[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     currentPage: 0,
@@ -65,7 +70,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
     department: '',
     joinDate: '',
     status: '',
-    photo: ""
+    photo: ''
   });
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -99,7 +104,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
           department: data.department,
           joinDate: data.joinDate,
           status: data.status,
-          photo:data.photo,
+          photo: data.photo
         });
       } else {
         setInitialValues({
@@ -220,9 +225,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
     setQuery((prev) => ({ ...prev, limit: parseInt(e.target.value, 10) }));
   };
 
-  const handleSubmit = async (
-    values: EmployeeFormValues,
-  ) => {
+  const handleSubmit = async (values: EmployeeFormValues) => {
     console.log(values);
     setLoading(true);
     const employeeData = {
@@ -243,6 +246,15 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
     }
     setLoading(false);
     navigate('/admin/employee');
+  };
+
+  const handleSort = (column: string) => {
+    const isAsc = query.sortBy === column && query.sortOrder === 'asc';
+    setQuery({
+      ...query,
+      sortBy: column,
+      sortOrder: isAsc ? 'desc' : 'asc'
+    });
   };
 
   useEffect(() => {
@@ -304,6 +316,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
         routerPush,
         tableEmployeeColumn,
         initialValues,
+        handleSort,
         id
       }}
     >

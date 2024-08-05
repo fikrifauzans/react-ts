@@ -17,7 +17,7 @@ export interface EmployeeQuery {
   limit: number;
   page: number;
   sortBy: string;
-  sortOrder: string;
+  sortOrder: "asc" | "desc";
 
 }
 
@@ -50,4 +50,5 @@ export interface EmployeeContextProps {
   tableEmployeeColumn: Array<any>;
   initialValues: EmployeeFormValues;
   id: any;
+  handleSort: (string) => void
 }

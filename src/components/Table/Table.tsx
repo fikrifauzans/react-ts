@@ -8,7 +8,8 @@ import {
   Checkbox,
   TableBody,
   Typography,
-  Divider
+  Divider,
+  TableSortLabel
 } from '@mui/material';
 
 interface ColumnGeneralInterface {
@@ -25,9 +26,13 @@ interface DefaultColumnProps {
   c: ColumnGeneralInterface;
   onSelectAll: (checked: boolean) => void;
   isChecked: boolean;
+  sortOrder: 'asc' | 'desc';
+  orderBy: string;
+  onSort: (column: string) => void;
+
 }
 
-function DefaultColumn({ c, onSelectAll, isChecked }: DefaultColumnProps) {
+function DefaultColumn({ c, onSelectAll, isChecked, sortOrder, orderBy, onSort  }: DefaultColumnProps) {
   return (
     <>
       {c.type === 'select' ? (
@@ -39,7 +44,15 @@ function DefaultColumn({ c, onSelectAll, isChecked }: DefaultColumnProps) {
           />
         </TableCell>
       ) : (
-        <TableCell align={c.align}>{c.label}</TableCell>
+        <TableCell align={c.align}>
+          <TableSortLabel
+            active={orderBy === c.name}
+            direction={orderBy === c.name ? sortOrder : 'asc'}
+            onClick={() => onSort(c.name)}
+          >
+            {c.label}
+          </TableSortLabel>
+        </TableCell>
       )}
     </>
   );
@@ -48,10 +61,14 @@ function DefaultColumn({ c, onSelectAll, isChecked }: DefaultColumnProps) {
 interface TableGeneralProps {
   column: ColumnGeneralInterface[];
   data: Array<any>;
+  orderBy: string;
+  sortOrder: "asc" | "desc";
+  handleSort: (string) => void
 }
 
-export default function TableGeneral({ column, data }: TableGeneralProps) {
+export default function TableGeneral({ column, data, orderBy, sortOrder, handleSort }: TableGeneralProps) {
   const [selected, setSelected] = useState<number[]>([]);
+  
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -68,6 +85,21 @@ export default function TableGeneral({ column, data }: TableGeneralProps) {
       setSelected([...selected, id]);
     }
   };
+
+  
+
+  const sortedData = React.useMemo(() => {
+    return [...data].sort((a, b) => {
+      if (orderBy) {
+        if (sortOrder === 'asc') {
+          return a[orderBy] < b[orderBy] ? -1 : 1;
+        } else {
+          return a[orderBy] > b[orderBy] ? -1 : 1;
+        }
+      }
+      return 0;
+    });
+  }, [data, orderBy, sortOrder]);
 
   const isCheckedAll = selected.length === data.length;
   const isChecked = (id: number) => selected.includes(id);
@@ -87,12 +119,15 @@ export default function TableGeneral({ column, data }: TableGeneralProps) {
                   c={c}
                   onSelectAll={handleSelectAll}
                   isChecked={isCheckedAll}
+                  sortOrder={sortOrder}
+                  orderBy={orderBy}
+                  onSort={handleSort}
                 />
               ))}
             </TableRow>
           </TableHead>
           <TableBody>
-            {data.map((data) => (
+            {sortedData.map((data) => (
               <TableRow hover key={data.id}>
                 {column.map((c, colIndex) => {
                   return (

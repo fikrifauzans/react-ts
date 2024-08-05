@@ -5,18 +5,16 @@ import {
   CardHeader,
   Card,
   TablePagination,
-  IconButton,
   CircularProgress
 } from '@mui/material';
 import { useEmployee } from 'src/contexts/EmployeeContext';
-import PageHeader from 'src/components/PageHeader/PageHeader';
 import { csvHeaders, MetaEmployee } from './Meta';
+import PageHeader from 'src/components/PageHeader/PageHeader';
 import AddButton from 'src/components/Button/AddButton';
 import TableGeneral from 'src/components/Table/Table';
 import AppTitle from 'src/components/AppTitle/AppTitle';
-import { CSVLink } from 'react-csv';
-import UploadIcon from '@mui/icons-material/Upload';
-import DownloadIcon from '@mui/icons-material/Download';
+import UploadButton from 'src/components/Button/UploadButton';
+import DownloadButton from 'src/components/Button/DownloadButton';
 
 const EmployeeList: React.FC = () => {
   const {
@@ -28,7 +26,9 @@ const EmployeeList: React.FC = () => {
     handleImportCSV,
     loading,
     routerPush,
-    tableEmployeeColumn
+    tableEmployeeColumn,
+    query,
+    handleSort
   } = useEmployee();
 
   useEffect(() => {
@@ -51,30 +51,13 @@ const EmployeeList: React.FC = () => {
           <CardHeader
             title={MetaEmployee.title}
             action={
-              <div>
-                <input
-                  accept=".csv"
-                  style={{ display: 'none' }}
-                  id="import-csv"
-                  type="file"
-                  onChange={handleImportCSV}
+              <>
+                <UploadButton handleImportCSV={handleImportCSV} />
+                <DownloadButton
+                  csvHeaders={csvHeaders}
+                  employeeList={employeeList}
                 />
-                <label htmlFor="import-csv">
-                  <IconButton color="primary" component="span">
-                    <UploadIcon />
-                  </IconButton>
-                </label>
-                <CSVLink
-                  headers={csvHeaders}
-                  data={employeeList}
-                  filename="employee_list.csv"
-                  style={{ textDecoration: 'none' }}
-                >
-                  <IconButton color="primary">
-                    <DownloadIcon />
-                  </IconButton>
-                </CSVLink>
-              </div>
+              </>
             }
           />
           {loading ? (
@@ -88,7 +71,13 @@ const EmployeeList: React.FC = () => {
             </Box>
           ) : (
             <>
-              <TableGeneral column={tableEmployeeColumn} data={employeeList} />
+              <TableGeneral
+                sortOrder={query.sortOrder}
+                orderBy={query.sortBy}
+                column={tableEmployeeColumn}
+                data={employeeList}
+                handleSort={handleSort}
+              />
               <Box p={2}>
                 <TablePagination
                   component="div"
