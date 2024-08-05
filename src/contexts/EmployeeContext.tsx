@@ -77,7 +77,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
     setLoading(true);
     try {
       const response = await getDetail(RESOURCE, id);
-      const {data} = response
+      const { data } = response;
       setInitialValues({
         name: data.name,
         number: data.number,
@@ -138,25 +138,38 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
-  const handleImportCSV = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleImportCSV = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      setLoading(true);
       Papa.parse(file, {
         header: true,
         skipEmptyLines: true,
-        complete: (results) => {
+        complete: async (results) => {
           const importedData = results.data.map((item: any) => ({
-            id: Date.now(),
-            name: item.name,
-            number: item.number,
-            position: item.position,
-            department: item.department,
-            joinDate: item.joinDate,
-            photo: item.photo,
+            
+            name: item.nama,
+            number: item.nomor,
+            position: item.jabatan,
+            department: item.departemen,
+            joinDate: item.tanggal_masuk,
+            photo: item.foto,
             photoPath: null,
             status: item.status
           }));
-          console.log(importedData);
+
+          for (const employee of importedData) {
+            try {
+              await createItem(RESOURCE, employee);
+            } catch (error) {
+              console.error('Failed to import employee', error);
+              toast.error(`Failed to import employee: ${employee.name}`);
+            }
+          }
+
+          toast.success('Employees imported successfully');
+          setLoading(false);
+          fetchEmployees();
         }
       });
     }
