@@ -4,6 +4,9 @@ const api = axios.create({
   baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:3000/api/v1',
   headers: {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache', // Ensure the request doesn't use cache
+    'Pragma': 'no-cache',
+    'Expires': '0'
   },
 });
 
