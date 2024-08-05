@@ -30,7 +30,7 @@ export const EmployeeForm: React.FC = () => {
           validationSchema={validationSchemaEmployee}
           onSubmit={(values) => handleSubmit(values)}
         >
-          {({ errors, touched }) => (
+          {({ errors, touched,values }) => (
             <Form>
               <FormCard title="Form Employee">
                 <Grid container>
@@ -125,7 +125,7 @@ export const EmployeeForm: React.FC = () => {
                   </Grid>
                   <Grid item xs={6}>
                     <Grid p={3}>
-                      <ImageUpload label="Upload Image" name="photoPath" />
+                      <ImageUpload label="Upload Image" name="photoPath"  defaultView={values.photo}/>
                     </Grid>
                   </Grid>
                 </Grid>

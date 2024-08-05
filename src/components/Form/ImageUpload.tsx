@@ -1,4 +1,4 @@
-import React, { useState, ChangeEvent } from 'react';
+import React, { useState, ChangeEvent, useEffect } from 'react';
 import { useField } from 'formik';
 import {
   TextField,
@@ -13,9 +13,14 @@ import {
 interface ImageUploadFieldProps {
   label: string;
   name: string;
+  defaultView: string;
 }
 
-const ImageUploadField: React.FC<ImageUploadFieldProps> = ({ label, name }) => {
+const ImageUploadField: React.FC<ImageUploadFieldProps> = ({
+  label,
+  name,
+  defaultView
+}) => {
   const [field, meta, helpers] = useField(name);
   const [preview, setPreview] = useState<string | null>(null);
 
@@ -35,6 +40,10 @@ const ImageUploadField: React.FC<ImageUploadFieldProps> = ({ label, name }) => {
       };
     }
   };
+
+  useEffect(() => {
+    setPreview(defaultView);
+  }, [defaultView]);
 
   return (
     <Box>
