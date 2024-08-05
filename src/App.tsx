@@ -11,12 +11,14 @@ function App() {
   const content = useRoutes(router);
 
   return (
-    <ThemeProvider>
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <CssBaseline />
-        {content}
-      </LocalizationProvider>
-    </ThemeProvider>
+    <>
+      <ThemeProvider>
+        <LocalizationProvider dateAdapter={AdapterDateFns}>
+          <CssBaseline />
+          {content}
+        </LocalizationProvider>
+      </ThemeProvider>
+    </>
   );
 }
 export default App;
