@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { TextField, Button, Box, CircularProgress, Grid } from '@mui/material';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import { useEmployee } from 'src/contexts/EmployeeContext';
@@ -6,9 +6,7 @@ import { MetaEmployee, validationSchemaEmployee } from './Meta';
 import AppTitle from 'src/components/AppTitle/AppTitle';
 import PageHeader from 'src/components/PageHeader/PageHeader';
 import FormCard from 'src/components/Card/FormCard';
-import { useParams } from 'react-router-dom';
 import ImageUpload from 'src/components/Form/ImageUpload';
-import { EmployeeFormValues } from 'src/contexts/interface/EmployeeContext';
 import SuspenseLoader from 'src/components/SuspenseLoader';
 
 export const EmployeeForm: React.FC = () => {
@@ -126,7 +124,9 @@ export const EmployeeForm: React.FC = () => {
                     </Box>
                   </Grid>
                   <Grid item xs={6}>
-                    <ImageUpload onImageUpload={handleImageUpload} />
+                    <Grid p={3}>
+                      <ImageUpload label="Upload Image" name="photoPath" />
+                    </Grid>
                   </Grid>
                 </Grid>
 

@@ -8,13 +8,17 @@ export interface Employee {
   department: string;
   joinDate: Date;
   photo?: string;
-  photoPath?: string;
+  photoPath?: any;
   status: string;
+ 
 }
 
 export interface EmployeeQuery {
   limit: number;
   page: number;
+  sortBy: string;
+  sortOrder: string;
+
 }
 
 export interface EmployeeFormValues {
@@ -25,6 +29,7 @@ export interface EmployeeFormValues {
   joinDate: string; // Using string for date input compatibility
   status: string;
   photo: string;
+  photoPath?: any;
 }
 
 export interface EmployeeContextProps {

@@ -1,52 +1,87 @@
-import React, { useState } from 'react';
-import { Button, Avatar, Box } from '@mui/material';
+import React, { useState, ChangeEvent } from 'react';
+import { useField } from 'formik';
+import {
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Grid,
+  Card,
+  CardContent
+} from '@mui/material';
 
-interface ImageUploadProps {
-  onImageUpload: (base64String: string | null) => void;
+interface ImageUploadFieldProps {
+  label: string;
+  name: string;
 }
 
-const ImageUpload: React.FC<ImageUploadProps> = ({ onImageUpload }) => {
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+const ImageUploadField: React.FC<ImageUploadFieldProps> = ({ label, name }) => {
+  const [field, meta, helpers] = useField(name);
+  const [preview, setPreview] = useState<string | null>(null);
 
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.currentTarget.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64String = reader.result as string;
-        setImagePreview(base64String);
-        onImageUpload(base64String.split(',')[1]); // remove the prefix `data:image/*;base64,`
-      };
       reader.readAsDataURL(file);
-    } else {
-      setImagePreview(null);
-      onImageUpload(null);
+      reader.onloadend = () => {
+        helpers.setValue({
+          base64string: reader.result as string,
+          fileName: file.name,
+          type: file.type,
+          size: file.size
+        });
+        setPreview(reader.result as string);
+      };
     }
   };
 
   return (
-    <Box display="flex" flexDirection="column" alignItems="center" marginBottom={2}>
-      <input
-        accept="image/*"
-        type="file"
-        onChange={handleImageChange}
-        style={{ display: 'none' }}
-        id="profile-picture-upload"
-      />
-      <label htmlFor="profile-picture-upload">
-        <Button variant="contained" component="span">
-          Upload Profile Picture
-        </Button>
-      </label>
-      {imagePreview && (
-        <Avatar
-          src={imagePreview}
-          alt="Profile Picture"
-          sx={{ width: 100, height: 100, marginTop: 2 }}
-        />
-      )}
+    <Box>
+      <Grid>
+        <Card>
+          <CardContent
+            style={{
+              padding: 10
+            }}
+          >
+            {preview && (
+              <Box>
+                <img
+                  src={preview}
+                  alt="Preview"
+                  style={{
+                    width: '100%',
+                    height: 'auto',
+                    borderRadius: '20px'
+                  }}
+                />
+              </Box>
+            )}
+            <Grid container justifyContent="space-between">
+              <Typography variant="h6" component="label" htmlFor={name}>
+                {label}
+              </Typography>
+              <Button variant="contained" component="label">
+                Upload File
+                <input
+                  id={name}
+                  name={name}
+                  type="file"
+                  hidden
+                  onChange={handleChange}
+                />
+              </Button>
+            </Grid>
+
+            {meta.touched && meta.error ? (
+              <Typography color="error">{meta.error}</Typography>
+            ) : null}
+          </CardContent>
+        </Card>
+      </Grid>
     </Box>
   );
 };
 
-export default ImageUpload;
+export default ImageUploadField;

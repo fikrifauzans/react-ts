@@ -44,7 +44,7 @@ const RESOURCE = 'employees';
 export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
   children
 }) => {
-  const [query, setQuery] = useState<EmployeeQuery>({ limit: 10, page: 1 });
+  const [query, setQuery] = useState<EmployeeQuery>({ limit: 10, page: 1 , sortBy: "id" , sortOrder: "DESC" });
   const [employeeList, setEmployeeList] = useState<Employee[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     currentPage: 0,
@@ -98,7 +98,8 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
           department: data.department,
           joinDate: data.joinDate,
           status: data.status,
-          photo:data.photo
+          photo:data.photo,
+         
         });
       } else {
         setInitialValues({
@@ -210,6 +211,9 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
   const handleSubmit = async (
     values: EmployeeFormValues,
   ) => {
+
+    console.log(values);
+    
     setLoading(true);
     const employeeData = {
       id: id ? parseInt(id) : null,
@@ -219,7 +223,8 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
       department: values.department,
       joinDate: new Date(values.joinDate),
       status: values.status,
-      photo: values.photo
+      photo: values.photo,
+      photoPath: values.photoPath
     };
     if (id) {
       await updateEmployee(parseInt(id), employeeData);
