@@ -151,7 +151,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
             name: item.nama,
             number: item.nomor,
             position: item.jabatan,
-            department: item.departemen,
+            department: item.departmen,
             joinDate: item.tanggal_masuk,
             photo: item.foto,
             photoPath: null,
