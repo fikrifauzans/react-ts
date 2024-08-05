@@ -27,6 +27,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import { FormikHelpers } from 'formik';
 import { DeleteAction, EditAction } from 'src/components/Button/TableAction';
 import Swal from 'sweetalert2';
+import { Chip } from '@mui/material';
 
 const EmployeeContext = createContext<EmployeeContextProps | undefined>(
   undefined
@@ -50,7 +51,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
     page: 1,
     sortBy: 'id',
     sortOrder: 'desc',
-    search: ""
+    search: ''
   });
   const [employeeList, setEmployeeList] = useState<Employee[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
@@ -277,7 +278,38 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
       align: 'left'
     },
     { name: 'joinDate', query: 'joinDate', label: 'Join Date', align: 'left' },
-    { name: 'status', query: 'status', label: 'Status', align: 'left' },
+    {
+      name: 'status',
+      query: 'status',
+      label: 'Status',
+      align: 'left',
+      component: (v) => {
+        switch (v.status) {
+          case 'kontrak':
+            return <Chip style={{minWidth:'150px'}} label={v?.status?.toUpperCase() ?? ""} color="primary" />
+          
+          case 'tetap':
+            return <Chip style={{minWidth:'150px'}} label={v?.status?.toUpperCase() ?? ""} color="info" />
+          
+          case 'probation':
+            return <Chip style={{minWidth:'150px'}} label={v?.status?.toUpperCase() ?? ""} color="warning" />
+          
+
+          default:
+            return ""
+            break;
+        }
+      }
+    },
+    {
+      name: 'photo',
+      query: 'photo',
+      label: 'photo',
+      align: 'left',
+      component: (data) => {
+        return data.photo ? <img width={50} src={data.photo} /> : '';
+      }
+    },
     {
       name: 'action',
       query: 'action',
