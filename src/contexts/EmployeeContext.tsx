@@ -28,6 +28,7 @@ import { FormikHelpers } from 'formik';
 import { DeleteAction, EditAction } from 'src/components/Button/TableAction';
 import Swal from 'sweetalert2';
 import { Chip } from '@mui/material';
+import { formatDate } from 'src/helper/date.helper';
 
 const EmployeeContext = createContext<EmployeeContextProps | undefined>(
   undefined
@@ -277,7 +278,13 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
       label: 'Department',
       align: 'left'
     },
-    { name: 'joinDate', query: 'joinDate', label: 'Join Date', align: 'left' },
+    {
+      name: 'joinDate',
+      query: 'joinDate',
+      label: 'Join Date',
+      align: 'left',
+      component: (v) => v.joinDate ? formatDate(v.joinDate) : ""
+     },
     {
       name: 'status',
       query: 'status',
@@ -286,17 +293,34 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
       component: (v) => {
         switch (v.status) {
           case 'kontrak':
-            return <Chip style={{minWidth:'150px'}} label={v?.status?.toUpperCase() ?? ""} color="primary" />
-          
+            return (
+              <Chip
+                style={{ minWidth: '150px' }}
+                label={v?.status?.toUpperCase() ?? ''}
+                color="primary"
+              />
+            );
+
           case 'tetap':
-            return <Chip style={{minWidth:'150px'}} label={v?.status?.toUpperCase() ?? ""} color="info" />
-          
+            return (
+              <Chip
+                style={{ minWidth: '150px' }}
+                label={v?.status?.toUpperCase() ?? ''}
+                color="info"
+              />
+            );
+
           case 'probation':
-            return <Chip style={{minWidth:'150px'}} label={v?.status?.toUpperCase() ?? ""} color="warning" />
-          
+            return (
+              <Chip
+                style={{ minWidth: '150px' }}
+                label={v?.status?.toUpperCase() ?? ''}
+                color="warning"
+              />
+            );
 
           default:
-            return ""
+            return '';
             break;
         }
       }
