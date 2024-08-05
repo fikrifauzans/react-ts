@@ -15,11 +15,12 @@ import {
 } from './interface/EmployeeContext';
 import { useNavigate } from 'react-router';
 import Papa from 'papaparse';
-import { EditAction } from 'src/components/Button/TableAction';
+import { DeleteAction, EditAction } from 'src/components/Button/TableAction';
+import Swal from 'sweetalert2';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-const EmployeeContext = createContext<EmployeeContextProps | undefined>(
-  undefined
-);
+const EmployeeContext = createContext<EmployeeContextProps | undefined>(undefined);
 
 export const useEmployee = (): EmployeeContextProps => {
   const context = useContext(EmployeeContext);
@@ -31,13 +32,8 @@ export const useEmployee = (): EmployeeContextProps => {
 
 const RESOURCE = 'employees';
 
-export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
-  children
-}) => {
-  const [query, setQuery] = useState<EmployeeQuery>({
-    limit: 10,
-    page: 1
-  });
+export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+  const [query, setQuery] = useState<EmployeeQuery>({ limit: 10, page: 1 });
   const [employeeList, setEmployeeList] = useState<Employee[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
     currentPage: 0,
@@ -58,29 +54,23 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
     try {
       const response = await getList(RESOURCE, { ...query, ...q });
       const { data, meta } = response;
-      const { pagination } = meta;
-      setPagination(pagination);
+      setPagination(meta.pagination);
       setEmployeeList(data);
     } catch (error) {
       console.error('Failed to fetch employees', error);
-      // Tambahkan logika untuk menampilkan pesan kesalahan kepada pengguna
+      toast.error('Failed to fetch employees');
     } finally {
       setLoading(false);
     }
   };
 
   const tableEmployeeColumn: Array<any> = [
-    { name: 'id', query: 'id', label: 'id', align: 'left', type: 'select' },
+    { name: 'id', query: 'id', label: 'ID', align: 'left', type: 'select' },
     { name: 'name', query: 'name', label: 'Name', align: 'left' },
-    { name: 'number', query: 'number', label: 'number', align: 'left' },
-    {
-      name: 'department',
-      query: 'department',
-      label: 'department',
-      align: 'left'
-    },
-    { name: 'joinDate', query: 'joinDate', label: 'joinDate', align: 'left' },
-    { name: 'status', query: 'status', label: 'status', align: 'left' },
+    { name: 'number', query: 'number', label: 'Number', align: 'left' },
+    { name: 'department', query: 'department', label: 'Department', align: 'left' },
+    { name: 'joinDate', query: 'joinDate', label: 'Join Date', align: 'left' },
+    { name: 'status', query: 'status', label: 'Status', align: 'left' },
     {
       name: 'action',
       query: 'action',
@@ -88,8 +78,14 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
       align: 'left',
       component: (val) => (
         <>
-          <EditAction title="Edit Data Employee" onClick={() => routerPush(`/admin/employee/form/${val?.id}`)} />
-
+          <EditAction
+            title="Edit Data Employee"
+            onClick={() => routerPush(`/admin/employee/form/${val?.id}`)}
+          />
+          <DeleteAction
+            title="Delete Data Employee"
+            onClick={() => handleDeleteClick(val?.id)}
+          />
         </>
       )
     }
@@ -100,9 +96,10 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
     try {
       const newEmployee = await createItem(RESOURCE, employee);
       setEmployeeList((prev) => [...prev, newEmployee]);
+      toast.success('Employee added successfully');
     } catch (error) {
       console.error('Failed to add employee', error);
-      // Tambahkan logika untuk menampilkan pesan kesalahan kepada pengguna
+      toast.error('Failed to add employee');
     } finally {
       setLoading(false);
     }
@@ -115,9 +112,10 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
       setEmployeeList((prev) =>
         prev.map((emp) => (emp.id === id ? updatedEmployee : emp))
       );
+      toast.success('Employee updated successfully');
     } catch (error) {
       console.error('Failed to update employee', error);
-      // Tambahkan logika untuk menampilkan pesan kesalahan kepada pengguna
+      toast.error('Failed to update employee');
     } finally {
       setLoading(false);
     }
@@ -128,12 +126,30 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
     try {
       await deleteItem(RESOURCE, id);
       setEmployeeList((prev) => prev.filter((emp) => emp.id !== id));
+      toast.success('Employee deleted successfully');
     } catch (error) {
       console.error('Failed to delete employee', error);
-      // Tambahkan logika untuk menampilkan pesan kesalahan kepada pengguna
+      toast.error('Failed to delete employee');
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDeleteClick = (id: number) => {
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteEmployee(id);
+        Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
+      }
+    });
   };
 
   const handleImportCSV = (event: ChangeEvent<HTMLInputElement>) => {
@@ -145,17 +161,16 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
         complete: (results) => {
           const importedData = results.data.map((item: any) => ({
             id: Date.now(),
-            name: item.nama,
-            number: item.nomor,
-            position: item.jabatan,
-            department: item.departemen,
-            joinDate: item.tanggal_masuk,
-            photo: item.foto,
+            name: item.name,
+            number: item.number,
+            position: item.position,
+            department: item.department,
+            joinDate: item.joinDate,
+            photo: item.photo,
             photoPath: null,
-            status: item.Status
+            status: item.status
           }));
           console.log(importedData);
-          // Tambahkan logika untuk menyimpan importedData ke state atau kirim ke server
         }
       });
     }
@@ -191,6 +206,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
         tableEmployeeColumn
       }}
     >
+      <ToastContainer />
       {children}
     </EmployeeContext.Provider>
   );
