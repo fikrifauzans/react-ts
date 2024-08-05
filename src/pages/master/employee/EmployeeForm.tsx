@@ -4,7 +4,6 @@ import {
   Button,
   Box,
   CircularProgress,
-  Avatar,
   Grid
 } from '@mui/material';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
@@ -13,29 +12,29 @@ import { MetaEmployee, validationSchemaEmployee } from './Meta';
 import AppTitle from 'src/components/AppTitle/AppTitle';
 import PageHeader from 'src/components/PageHeader/PageHeader';
 import FormCard from 'src/components/Card/FormCard';
-
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import ImageUpload from 'src/components/Form/ImageUpload';
+import { EmployeeFormValues } from 'src/contexts/interface/EmployeeContext';
 
 export const EmployeeForm: React.FC = () => {
-  const { addEmployee, updateEmployee, employeeList, fetchEmployees } =
-    useEmployee();
-  const [loading, setLoading] = useState(false);
-  const [initialValues, setInitialValues] = useState({
-    name: '',
-    number: 0,
-    position: '',
-    department: '',
-    joinDate: '',
-    status: ''
-  });
+  const {
+    handleSubmit,
+    initialValues,
+    getDetailEmployee,
+    loading
+  } = useEmployee();
   const [imageBase64, setImageBase64] = useState<string | null>(null);
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
 
   const handleImageUpload = (base64String: string | null) => {
     setImageBase64(base64String);
   };
+
+  useEffect(() => {
+    if (id) {
+      getDetailEmployee(parseInt(id));
+    }
+  }, [id]);
 
   return (
     <>
@@ -44,36 +43,17 @@ export const EmployeeForm: React.FC = () => {
 
       <Formik
         initialValues={initialValues}
-        enableReinitialize
+        enableReinitialize={true}
         validationSchema={validationSchemaEmployee}
-        onSubmit={async (values, { resetForm }) => {
-          setLoading(true);
-          const employeeData = {
-            id: id ? parseInt(id) : null,
-            name: values.name,
-            number: values.number,
-            position: values.position,
-            department: values.department,
-            joinDate: new Date(values.joinDate),
-            status: values.status,
-            photo: imageBase64
-          };
-          if (id) {
-            await updateEmployee(parseInt(id), employeeData);
-          } else {
-            await addEmployee(employeeData);
-          }
-          setLoading(false);
-          resetForm();
-          setImageBase64(null);
-          navigate('/admin/employee'); 
-        }}
+        onSubmit={(values) =>
+          handleSubmit(values, id, imageBase64)
+        }
       >
         {({ errors, touched }) => (
           <Form>
             <FormCard title="Form Employee">
               <Grid container>
-                <Grid xs={6}>
+                <Grid item xs={6}>
                   <Box marginBottom={2}>
                     <Field
                       as={TextField}
@@ -110,10 +90,21 @@ export const EmployeeForm: React.FC = () => {
                       as={TextField}
                       label="Department"
                       name="department"
+                      select
+                      SelectProps={{
+                        native: true,
+                      }}
                       fullWidth
                       error={touched.department && !!errors.department}
                       helperText={<ErrorMessage name="department" />}
-                    />
+                    >
+                      <option value="" />
+                      <option value="Marketing">Marketing</option>
+                      <option value="Tech">Tech</option>
+                      <option value="Customer Service">Customer Service</option>
+                      <option value="HR">HR</option>
+                      <option value="Finance">Finance</option>
+                    </Field>
                   </Box>
                   <Box marginBottom={2}>
                     <Field
@@ -134,13 +125,22 @@ export const EmployeeForm: React.FC = () => {
                       as={TextField}
                       label="Status"
                       name="status"
+                      select
+                      SelectProps={{
+                        native: true,
+                      }}
                       fullWidth
                       error={touched.status && !!errors.status}
                       helperText={<ErrorMessage name="status" />}
-                    />
+                    >
+                      <option value="" />
+                      <option value="kontrak">Kontrak</option>
+                      <option value="tetap">Tetap</option>
+                      <option value="probation">Probation</option>
+                    </Field>
                   </Box>
                 </Grid>
-                <Grid xs={6}>
+                <Grid item xs={6}>
                   <ImageUpload onImageUpload={handleImageUpload} />
                 </Grid>
               </Grid>

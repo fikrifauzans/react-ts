@@ -6,19 +6,20 @@ import React, {
   ReactNode,
   ChangeEvent
 } from 'react';
-import { getList, createItem, updateItem, deleteItem } from '../api/api';
+import { getList, getDetail, createItem, updateItem, deleteItem } from '../api/api';
 import { Pagination } from 'src/utils/type/pagination';
 import {
   Employee,
   EmployeeContextProps,
-  EmployeeQuery
+  EmployeeQuery,
+  EmployeeFormValues
 } from './interface/EmployeeContext';
 import { useNavigate } from 'react-router';
 import Papa from 'papaparse';
-import { DeleteAction, EditAction } from 'src/components/Button/TableAction';
-import Swal from 'sweetalert2';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { FormikHelpers } from 'formik';
+import { DeleteAction, EditAction } from 'src/components/Button/TableAction';
 
 const EmployeeContext = createContext<EmployeeContextProps | undefined>(undefined);
 
@@ -46,6 +47,14 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
     endData: 0
   });
   const [loading, setLoading] = useState<boolean>(false);
+  const [initialValues, setInitialValues] = useState<EmployeeFormValues>({
+    name: '',
+    number: 0,
+    position: '',
+    department: '',
+    joinDate: '',
+    status: ''
+  });
   const navigate = useNavigate();
   const routerPush = (url: string) => navigate(url);
 
@@ -64,32 +73,26 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
-  const tableEmployeeColumn: Array<any> = [
-    { name: 'id', query: 'id', label: 'ID', align: 'left', type: 'select' },
-    { name: 'name', query: 'name', label: 'Name', align: 'left' },
-    { name: 'number', query: 'number', label: 'Number', align: 'left' },
-    { name: 'department', query: 'department', label: 'Department', align: 'left' },
-    { name: 'joinDate', query: 'joinDate', label: 'Join Date', align: 'left' },
-    { name: 'status', query: 'status', label: 'Status', align: 'left' },
-    {
-      name: 'action',
-      query: 'action',
-      label: 'Action',
-      align: 'left',
-      component: (val) => (
-        <>
-          <EditAction
-            title="Edit Data Employee"
-            onClick={() => routerPush(`/admin/employee/form/${val?.id}`)}
-          />
-          <DeleteAction
-            title="Delete Data Employee"
-            onClick={() => handleDeleteClick(val?.id)}
-          />
-        </>
-      )
+  const getDetailEmployee = async (id: number) => {
+    setLoading(true);
+    try {
+      const response = await getDetail(RESOURCE, id);
+      const {data} = response
+      setInitialValues({
+        name: data.name,
+        number: data.number,
+        position: data.position,
+        department: data.department,
+        joinDate: data.joinDate,
+        status: data.status
+      });
+    } catch (error) {
+      console.error('Failed to fetch employee', error);
+      toast.error('Failed to fetch employee');
+    } finally {
+      setLoading(false);
     }
-  ];
+  };
 
   const addEmployee = async (employee: Employee) => {
     setLoading(true);
@@ -135,23 +138,6 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
     }
   };
 
-  const handleDeleteClick = (id: number) => {
-    Swal.fire({
-      title: 'Are you sure?',
-      text: "You won't be able to revert this!",
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#3085d6',
-      cancelButtonColor: '#d33',
-      confirmButtonText: 'Yes, delete it!'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        deleteEmployee(id);
-        Swal.fire('Deleted!', 'Your file has been deleted.', 'success');
-      }
-    });
-  };
-
   const handleImportCSV = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -184,6 +170,58 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
     setQuery((prev) => ({ ...prev, limit: parseInt(e.target.value, 10) }));
   };
 
+  const handleSubmit = async (
+    values: EmployeeFormValues,
+    id: string | undefined,
+    imageBase64: string | null
+  ) => {
+    setLoading(true);
+    const employeeData = {
+      id: id ? parseInt(id) : null,
+      name: values.name,
+      number: values.number,
+      position: values.position,
+      department: values.department,
+      joinDate: new Date(values.joinDate),
+      status: values.status,
+      photo: imageBase64
+    };
+    if (id) {
+      await updateEmployee(parseInt(id), employeeData);
+    } else {
+      await addEmployee(employeeData);
+    }
+    setLoading(false);
+    navigate('/admin/employee');
+  };
+
+  const tableEmployeeColumn: Array<any> = [
+    { name: 'id', query: 'id', label: 'ID', align: 'left', type: 'select' },
+    { name: 'name', query: 'name', label: 'Name', align: 'left' },
+    { name: 'number', query: 'number', label: 'Number', align: 'left' },
+    { name: 'department', query: 'department', label: 'Department', align: 'left' },
+    { name: 'joinDate', query: 'joinDate', label: 'Join Date', align: 'left' },
+    { name: 'status', query: 'status', label: 'Status', align: 'left' },
+    {
+      name: 'action',
+      query: 'action',
+      label: 'Action',
+      align: 'left',
+      component: (val) => (
+        <>
+          <EditAction
+            title="Edit Data Employee"
+            onClick={() => routerPush(`/admin/employee/form/${val?.id}`)}
+          />
+          <DeleteAction
+            title="Delete Data Employee"
+            onClick={() => deleteEmployee(val?.id)}
+          />
+        </>
+      )
+    }
+  ];
+
   useEffect(() => {
     fetchEmployees();
   }, [query]);
@@ -197,13 +235,16 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
         addEmployee,
         updateEmployee,
         deleteEmployee,
+        getDetailEmployee,
         onPageChange,
         onRowsPerPageChange,
         handleImportCSV,
+        handleSubmit,
         loading,
         query,
         routerPush,
-        tableEmployeeColumn
+        tableEmployeeColumn,
+        initialValues
       }}
     >
       <ToastContainer />
