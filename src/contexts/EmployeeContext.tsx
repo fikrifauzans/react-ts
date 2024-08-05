@@ -49,7 +49,8 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
     limit: 10,
     page: 1,
     sortBy: 'id',
-    sortOrder: 'desc'
+    sortOrder: 'desc',
+    search: ""
   });
   const [employeeList, setEmployeeList] = useState<Employee[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
@@ -257,6 +258,10 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
     });
   };
 
+  const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setQuery((prev) => ({ ...prev, search: event.target.value }));
+  };
+
   useEffect(() => {
     getDetailEmployee(parseInt(id));
   }, [id]);
@@ -317,7 +322,8 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
         tableEmployeeColumn,
         initialValues,
         handleSort,
-        id
+        id,
+        handleSearchChange
       }}
     >
       <ToastContainer />

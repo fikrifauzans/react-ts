@@ -15,7 +15,7 @@ const DownloadButton = ({ csvHeaders, employeeList }) => {
         variant="contained"
         color="primary"
         startIcon={<DownloadIcon />}
-        size="small"
+        size="medium"
       >
         Download CSV
       </Button>

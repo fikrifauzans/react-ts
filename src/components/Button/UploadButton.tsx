@@ -18,7 +18,7 @@ const UploadButton = ({ handleImportCSV }) => {
           color="primary"
           component="span"
           startIcon={<UploadIcon />}
-          size="small"
+          size="medium"
         >
           Upload CSV
         </Button>

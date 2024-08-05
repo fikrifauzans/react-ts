@@ -5,7 +5,9 @@ import {
   CardHeader,
   Card,
   TablePagination,
-  CircularProgress
+  CircularProgress,
+  TextField,
+  Grid
 } from '@mui/material';
 import { useEmployee } from 'src/contexts/EmployeeContext';
 import { csvHeaders, MetaEmployee } from './Meta';
@@ -28,7 +30,8 @@ const EmployeeList: React.FC = () => {
     routerPush,
     tableEmployeeColumn,
     query,
-    handleSort
+    handleSort,
+    handleSearchChange
   } = useEmployee();
 
   useEffect(() => {
@@ -52,14 +55,28 @@ const EmployeeList: React.FC = () => {
             title={MetaEmployee.title}
             action={
               <>
-                <UploadButton handleImportCSV={handleImportCSV} />
-                <DownloadButton
-                  csvHeaders={csvHeaders}
-                  employeeList={employeeList}
-                />
+                <Grid container display="flex" alignItems="center" >
+                  <UploadButton handleImportCSV={handleImportCSV} />
+
+                  <DownloadButton
+                    csvHeaders={csvHeaders}
+                    employeeList={employeeList}
+                  />
+
+                  <TextField
+                    label="Search"
+                    variant="outlined"
+                    value={query.search}
+                    onChange={handleSearchChange}
+                    style={{
+                      marginLeft:"20px"
+                    }}
+                  />
+                </Grid>
               </>
             }
           />
+
           {loading ? (
             <Box
               display="flex"

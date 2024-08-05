@@ -18,6 +18,7 @@ export interface EmployeeQuery {
   page: number;
   sortBy: string;
   sortOrder: "asc" | "desc";
+  search: string;
 
 }
 
@@ -51,4 +52,5 @@ export interface EmployeeContextProps {
   initialValues: EmployeeFormValues;
   id: any;
   handleSort: (string) => void
+  handleSearchChange: (any) => void
 }
