@@ -26,6 +26,7 @@ import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FormikHelpers } from 'formik';
 import { DeleteAction, EditAction } from 'src/components/Button/TableAction';
+import Swal from 'sweetalert2';
 
 const EmployeeContext = createContext<EmployeeContextProps | undefined>(
   undefined
@@ -99,7 +100,6 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
           joinDate: data.joinDate,
           status: data.status,
           photo:data.photo,
-         
         });
       } else {
         setInitialValues({
@@ -151,17 +151,29 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
   };
 
   const deleteEmployee = async (id: number) => {
-    setLoading(true);
-    try {
-      await deleteItem(RESOURCE, id);
-      setEmployeeList((prev) => prev.filter((emp) => emp.id !== id));
-      toast.success('Employee deleted successfully');
-    } catch (error) {
-      console.error('Failed to delete employee', error);
-      toast.error('Failed to delete employee');
-    } finally {
-      setLoading(false);
-    }
+    Swal.fire({
+      title: 'Are you sure?',
+      text: "You won't be able to revert this!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Yes, delete it!'
+    }).then(async (result) => {
+      if (result.isConfirmed) {
+        setLoading(true);
+        try {
+          await deleteItem(RESOURCE, id);
+          setEmployeeList((prev) => prev.filter((emp) => emp.id !== id));
+          Swal.fire('Deleted!', 'Employee has been deleted.', 'success');
+        } catch (error) {
+          console.error('Failed to delete employee', error);
+          toast.error('Failed to delete employee');
+        } finally {
+          setLoading(false);
+        }
+      }
+    });
   };
 
   const handleImportCSV = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -211,9 +223,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
   const handleSubmit = async (
     values: EmployeeFormValues,
   ) => {
-
     console.log(values);
-    
     setLoading(true);
     const employeeData = {
       id: id ? parseInt(id) : null,
