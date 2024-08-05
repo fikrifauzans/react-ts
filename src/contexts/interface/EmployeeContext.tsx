@@ -24,6 +24,7 @@ export interface EmployeeFormValues {
   department: string;
   joinDate: string; // Using string for date input compatibility
   status: string;
+  photo: string;
 }
 
 export interface EmployeeContextProps {
@@ -38,9 +39,10 @@ export interface EmployeeContextProps {
   onPageChange: (e: React.ChangeEvent<unknown>, newPage: number) => void;
   onRowsPerPageChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   handleImportCSV: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSubmit: (values: EmployeeFormValues, id: string | undefined, imageBase64: string | null) => Promise<void>;
+  handleSubmit: (values: EmployeeFormValues) => Promise<void>;
   loading: boolean;
   routerPush: (url: string) => void;
   tableEmployeeColumn: Array<any>;
   initialValues: EmployeeFormValues;
+  id: any;
 }

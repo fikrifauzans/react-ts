@@ -6,7 +6,13 @@ import React, {
   ReactNode,
   ChangeEvent
 } from 'react';
-import { getList, getDetail, createItem, updateItem, deleteItem } from '../api/api';
+import {
+  getList,
+  getDetail,
+  createItem,
+  updateItem,
+  deleteItem
+} from '../api/api';
 import { Pagination } from 'src/utils/type/pagination';
 import {
   Employee,
@@ -14,14 +20,16 @@ import {
   EmployeeQuery,
   EmployeeFormValues
 } from './interface/EmployeeContext';
-import { useNavigate } from 'react-router';
+import { useNavigate, useParams } from 'react-router';
 import Papa from 'papaparse';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FormikHelpers } from 'formik';
 import { DeleteAction, EditAction } from 'src/components/Button/TableAction';
 
-const EmployeeContext = createContext<EmployeeContextProps | undefined>(undefined);
+const EmployeeContext = createContext<EmployeeContextProps | undefined>(
+  undefined
+);
 
 export const useEmployee = (): EmployeeContextProps => {
   const context = useContext(EmployeeContext);
@@ -33,7 +41,9 @@ export const useEmployee = (): EmployeeContextProps => {
 
 const RESOURCE = 'employees';
 
-export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
+export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({
+  children
+}) => {
   const [query, setQuery] = useState<EmployeeQuery>({ limit: 10, page: 1 });
   const [employeeList, setEmployeeList] = useState<Employee[]>([]);
   const [pagination, setPagination] = useState<Pagination>({
@@ -53,8 +63,10 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
     position: '',
     department: '',
     joinDate: '',
-    status: ''
+    status: '',
+    photo: ""
   });
+  const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const routerPush = (url: string) => navigate(url);
 
@@ -76,16 +88,29 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
   const getDetailEmployee = async (id: number) => {
     setLoading(true);
     try {
-      const response = await getDetail(RESOURCE, id);
-      const { data } = response;
-      setInitialValues({
-        name: data.name,
-        number: data.number,
-        position: data.position,
-        department: data.department,
-        joinDate: data.joinDate,
-        status: data.status
-      });
+      if (id) {
+        const response = await getDetail(RESOURCE, id);
+        const { data } = response;
+        setInitialValues({
+          name: data.name,
+          number: data.number,
+          position: data.position,
+          department: data.department,
+          joinDate: data.joinDate,
+          status: data.status,
+          photo:data.photo
+        });
+      } else {
+        setInitialValues({
+          name: null,
+          number: null,
+          position: null,
+          department: null,
+          joinDate: null,
+          status: null,
+          photo: null
+        });
+      }
     } catch (error) {
       console.error('Failed to fetch employee', error);
       toast.error('Failed to fetch employee');
@@ -147,7 +172,6 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
         skipEmptyLines: true,
         complete: async (results) => {
           const importedData = results.data.map((item: any) => ({
-            
             name: item.nama,
             number: item.nomor,
             position: item.jabatan,
@@ -185,8 +209,6 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
 
   const handleSubmit = async (
     values: EmployeeFormValues,
-    id: string | undefined,
-    imageBase64: string | null
   ) => {
     setLoading(true);
     const employeeData = {
@@ -197,7 +219,7 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
       department: values.department,
       joinDate: new Date(values.joinDate),
       status: values.status,
-      photo: imageBase64
+      photo: values.photo
     };
     if (id) {
       await updateEmployee(parseInt(id), employeeData);
@@ -208,11 +230,20 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
     navigate('/admin/employee');
   };
 
+  useEffect(() => {
+    getDetailEmployee(parseInt(id));
+  }, [id]);
+
   const tableEmployeeColumn: Array<any> = [
     { name: 'id', query: 'id', label: 'ID', align: 'left', type: 'select' },
     { name: 'name', query: 'name', label: 'Name', align: 'left' },
     { name: 'number', query: 'number', label: 'Number', align: 'left' },
-    { name: 'department', query: 'department', label: 'Department', align: 'left' },
+    {
+      name: 'department',
+      query: 'department',
+      label: 'Department',
+      align: 'left'
+    },
     { name: 'joinDate', query: 'joinDate', label: 'Join Date', align: 'left' },
     { name: 'status', query: 'status', label: 'Status', align: 'left' },
     {
@@ -257,7 +288,8 @@ export const EmployeeProvider: React.FC<{ children: ReactNode }> = ({ children }
         query,
         routerPush,
         tableEmployeeColumn,
-        initialValues
+        initialValues,
+        id
       }}
     >
       <ToastContainer />
